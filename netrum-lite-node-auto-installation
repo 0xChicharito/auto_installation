@@ -1,112 +1,91 @@
 #!/bin/bash
 
 while true; do
+  clear
+  echo -e "\n\033[1;35m   Netrum Lite Node - Node9x Auto Installer\033[0m"
+  echo "   ========================================"
+  echo "1) Install Netrum Lite Node    4) Start Mining              7) Update CLI"
+  echo "2) Create New Wallet           5) View Mining Log           8) Delete Node"
+  echo "3) Import Wallet               6) Claim Rewards             9) Exit"
+  echo ""
+  read -p "Select an action [1-9]: " choice
 
-# Logo
-echo -e "\n\033[1;35m   Netrum Lite Node - Node9x Auto Installer\033[0m"
-echo "   ========================================"
+  case $choice in
+    1)
+      echo -e "\n\033[1;32mStarting Netrum Lite Node setup...\033[0m"
+      git clone https://github.com/NetrumLabs/netrum-lite-node.git
+      cd netrum-lite-node || exit
+      sudo apt update && sudo apt install -y curl bc jq speedtest-cli nodejs npm
 
-# Menu
-PS3='Select an action: '
-options=(
-"Install Netrum Lite Node"
-"Create New Wallet"
-"Import Wallet"
-"Start Mining"
-"View Mining Log"
-"Claim Rewards"
-"Update CLI"
-"Delete Node"
-"Exit"
-)
-select opt in "${options[@]}"
-do
-case $opt in
+      if ! node -v | grep -q "v20"; then
+        echo -e "\n\033[1;33mInstalling Node.js v20...\033[0m"
+        curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+        sudo apt install -y nodejs
+      fi
 
-"Install Netrum Lite Node")
-echo -e "\n\033[1;32mStarting Netrum Lite Node setup...\033[0m"
+      npm install
+      npm link
 
-# Clone repository
-git clone https://github.com/NetrumLabs/netrum-lite-node.git
-cd netrum-lite-node || exit
+      echo -e "\n\033[1;32m✅ Netrum CLI installed successfully!\033[0m"
+      echo -e "To run: \033[1;33mnetrum\033[0m"
+      read -p "Press Enter to return to menu..."
+      ;;
 
-# Install dependencies
-sudo apt update && sudo apt install -y curl bc jq speedtest-cli nodejs npm
+    2)
+      echo -e "\n\033[1;34mEnter wallet name:\033[0m"
+      read WALLET_NAME
+      echo export WALLET_NAME=${WALLET_NAME} >> ~/.bash_profile
+      source ~/.bash_profile
+      netrum-new-wallet --name "$WALLET_NAME"
+      echo -e "\n\033[1;31m⚠️  Save your mnemonic phrase securely!\033[0m"
+      read -p "Press Enter to return to menu..."
+      ;;
 
-# Check and install Node.js v20
-if ! node -v | grep -q "v20"; then
-  echo -e "\n\033[1;33mInstalling Node.js v20...\033[0m"
-  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-  sudo apt install -y nodejs
-fi
+    3)
+      netrum-import-wallet
+      read -p "Press Enter to return to menu..."
+      ;;
 
-# Install and link Netrum CLI
-npm install
-npm link
+    4)
+      netrum-mining
+      read -p "Press Enter to return to menu..."
+      ;;
 
-echo -e "\n\033[1;32m✅ Netrum CLI installed successfully!\033[0m"
-echo -e "To run, type: \033[1;33mnetrum\033[0m"
+    5)
+      netrum-mining-log
+      read -p "Press Enter to return to menu..."
+      ;;
 
-break
-;;
+    6)
+      netrum-claim
+      read -p "Press Enter to return to menu..."
+      ;;
 
-"Create New Wallet")
-echo -e "\n\033[1;34mEnter wallet name:\033[0m"
-read WALLET_NAME
-echo export WALLET_NAME=${WALLET_NAME} >> ~/.bash_profile
-source ~/.bash_profile
-netrum-new-wallet --name "$WALLET_NAME"
-echo -e "\n\033[1;31m⚠️  Save your mnemonic phrase securely!\033[0m"
-break
-;;
+    7)
+      netrum-update
+      read -p "Press Enter to return to menu..."
+      ;;
 
-"Import Wallet")
-netrum-import-wallet
-break
-;;
+    8)
+      echo -e "\n\033[1;31m⚠️  WARNING: This will remove Netrum CLI and all wallet data.\033[0m"
+      read -p "Are you sure you want to delete everything? (y/N): " confirm
+      if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+        sudo rm -rf ~/netrum-lite-node ~/.config/netrum-lite-node /usr/local/bin/netrum
+        echo -e "\n\033[1;32mNetrum Lite Node deleted successfully.\033[0m"
+      else
+        echo -e "\n\033[1;33mAborted.\033[0m"
+      fi
+      read -p "Press Enter to return to menu..."
+      ;;
 
-"Start Mining")
-netrum-mining
-break
-;;
+    9)
+      echo -e "\n\033[1;35mGoodbye!\033[0m"
+      break
+      ;;
 
-"View Mining Log")
-netrum-mining-log
-break
-;;
-
-"Claim Rewards")
-netrum-claim
-break
-;;
-
-"Update CLI")
-netrum-update
-break
-;;
-
-"Delete Node")
-echo -e "\n\033[1;31mWARNING: This will remove Netrum CLI and all wallets.\033[0m"
-read -p "Are you sure? (y/N): " confirm
-if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
-  sudo rm -rf ~/netrum-lite-node
-  sudo rm -rf ~/.config/netrum-lite-node
-  sudo rm -rf /usr/local/bin/netrum
-  echo -e "\n\033[1;32mNetrum CLI and data removed.\033[0m"
-else
-  echo -e "\n\033[1;33mAborted.\033[0m"
-fi
-break
-;;
-
-"Exit")
-echo "Goodbye!"
-exit 0
-;;
-
-*)
-echo -e "\033[1;31mInvalid option. Try again.\033[0m"
-;;
-esac
-done
+    *)
+      echo -e "\n\033[1;31mInvalid option. Please select 1-9.\033[0m"
+      read -p "Press Enter to try again..."
+      ;;
+  esac
 done
