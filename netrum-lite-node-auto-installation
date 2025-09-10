@@ -1,0 +1,112 @@
+#!/bin/bash
+
+while true; do
+
+# Logo
+echo -e "\n\033[1;35m   Netrum Lite Node - Node9x Auto Installer\033[0m"
+echo "   ========================================"
+
+# Menu
+PS3='Select an action: '
+options=(
+"Install Netrum Lite Node"
+"Create New Wallet"
+"Import Wallet"
+"Start Mining"
+"View Mining Log"
+"Claim Rewards"
+"Update CLI"
+"Delete Node"
+"Exit"
+)
+select opt in "${options[@]}"
+do
+case $opt in
+
+"Install Netrum Lite Node")
+echo -e "\n\033[1;32mStarting Netrum Lite Node setup...\033[0m"
+
+# Clone repository
+git clone https://github.com/NetrumLabs/netrum-lite-node.git
+cd netrum-lite-node || exit
+
+# Install dependencies
+sudo apt update && sudo apt install -y curl bc jq speedtest-cli nodejs npm
+
+# Check and install Node.js v20
+if ! node -v | grep -q "v20"; then
+  echo -e "\n\033[1;33mInstalling Node.js v20...\033[0m"
+  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+  sudo apt install -y nodejs
+fi
+
+# Install and link Netrum CLI
+npm install
+npm link
+
+echo -e "\n\033[1;32m✅ Netrum CLI installed successfully!\033[0m"
+echo -e "To run, type: \033[1;33mnetrum\033[0m"
+
+break
+;;
+
+"Create New Wallet")
+echo -e "\n\033[1;34mEnter wallet name:\033[0m"
+read WALLET_NAME
+echo export WALLET_NAME=${WALLET_NAME} >> ~/.bash_profile
+source ~/.bash_profile
+netrum-new-wallet --name "$WALLET_NAME"
+echo -e "\n\033[1;31m⚠️  Save your mnemonic phrase securely!\033[0m"
+break
+;;
+
+"Import Wallet")
+netrum-import-wallet
+break
+;;
+
+"Start Mining")
+netrum-mining
+break
+;;
+
+"View Mining Log")
+netrum-mining-log
+break
+;;
+
+"Claim Rewards")
+netrum-claim
+break
+;;
+
+"Update CLI")
+netrum-update
+break
+;;
+
+"Delete Node")
+echo -e "\n\033[1;31mWARNING: This will remove Netrum CLI and all wallets.\033[0m"
+read -p "Are you sure? (y/N): " confirm
+if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+  sudo rm -rf ~/netrum-lite-node
+  sudo rm -rf ~/.config/netrum-lite-node
+  sudo rm -rf /usr/local/bin/netrum
+  echo -e "\n\033[1;32mNetrum CLI and data removed.\033[0m"
+else
+  echo -e "\n\033[1;33mAborted.\033[0m"
+fi
+break
+;;
+
+"Exit")
+echo "Goodbye!"
+exit 0
+;;
+
+*)
+echo -e "\033[1;31mInvalid option. Try again.\033[0m"
+;;
+esac
+done
+done
