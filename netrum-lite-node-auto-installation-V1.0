@@ -1,7 +1,7 @@
 #!/bin/bash
 
 show_menu() {
-  echo -e "\n\033[1;35m   Netrum Lite Node - Node9x Auto Installer V1.0\033[0m"
+  echo -e "\n\033[1;35m   Netrum Lite Node - Node9x Auto Installer V1.0 \033[0m"
   echo "   ========================================"
   echo "1) Install Netrum Lite Node    5) Start Mining              9) Update CLI"
   echo "2) Create New Wallet           6) View Mining Log           10) Delete Node"
